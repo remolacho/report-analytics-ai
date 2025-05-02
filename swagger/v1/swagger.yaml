@@ -1,0 +1,19 @@
+---
+openapi: 3.0.1
+info:
+  title: API V1
+  version: v1
+paths:
+  "/v1/hi":
+    get:
+      summary: Get HI
+      tags:
+      - Hi
+      responses:
+        '200':
+          description: Hi
+servers:
+- url: https://{defaultHost}
+  variables:
+    defaultHost:
+      default: www.example.com

@@ -1,0 +1,31 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  port: <%= ENV.fetch("DB_PORT") { 5432 } %>
+  timeout: 5000
+  statement_limit: 200
+
+development:
+  <<: *default
+  host: <%= ENV.fetch("DB_HOSTNAME") %>
+  database: <%= ENV.fetch("DB_NAME") %>
+  username: <%= ENV.fetch("DB_USERNAME") %>
+  password: <%= ENV.fetch("DB_PASSWORD") %>
+
+test:
+  <<: *default
+  host: <%= ENV.fetch("DB_HOSTNAME") %>
+  database: <%= ENV.fetch("DB_NAME") %>
+  username: <%= ENV.fetch("DB_USERNAME") %>
+  password: <%= ENV.fetch("DB_PASSWORD") %>
+
+staging:
+  <<: *default
+
+production:
+  <<: *default
+  host: <%= ENV.fetch("DB_HOSTNAME") %>
+  database: <%= ENV.fetch("DB_NAME") %>
+  username: <%= ENV.fetch("DB_USERNAME") %>
+  password: <%= ENV.fetch("DB_PASSWORD") %>
