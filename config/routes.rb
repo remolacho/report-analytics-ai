@@ -16,6 +16,9 @@ Rails.application.routes.draw do
             post 'xlsx_to_dataset', to: 'convert#index'
           end
         end
+        resources :chat, only: [:create] do
+          delete ':session_id', to: 'chat#destroy', on: :collection
+        end
       end
     end
   end
