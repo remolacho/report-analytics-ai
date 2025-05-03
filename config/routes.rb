@@ -10,6 +10,13 @@ Rails.application.routes.draw do
   namespace :api, path: "" do
     namespace :v1 do
       resources :hi, only: [:index]
+      namespace :core do
+        resources :convert, only: [] do
+          collection do
+            post 'xlsx_to_dataset', to: 'convert#index'
+          end
+        end
+      end
     end
   end
 end
