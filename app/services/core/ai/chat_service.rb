@@ -2,6 +2,8 @@ module Core
   module Ai
     class ChatService
       MAX_HISTORY = 10
+      CACHE_KEY_PREFIX = "chat_history"
+      CACHE_EXPIRY = 1.minute
 
       class << self
         def chat(message, session_id = nil)
@@ -47,12 +49,19 @@ module Core
           }
         rescue OpenAI::Error => e
           raise ArgumentError, e.message
+        rescue Redis::BaseError => e
+          retry_with_memory_store(message, session_id)
         rescue StandardError => e
           raise ArgumentError, e.message
         end
 
         def clear_chat_history(session_id)
-          Rails.cache.delete("chat_history_#{session_id}") if session_id
+          return unless session_id
+
+          Rails.cache.delete(cache_key(session_id))
+        rescue Redis::BaseError => e
+          Rails.logger.error("Failed to clear chat history: #{e.message}")
+          false
         end
 
         private
@@ -60,7 +69,10 @@ module Core
         def get_chat_history(session_id)
           return [] unless session_id
 
-          Rails.cache.fetch("chat_history_#{session_id}", expires_in: 1.hour) || []
+          Rails.cache.fetch(cache_key(session_id), expires_in: CACHE_EXPIRY) || []
+        rescue Redis::BaseError => e
+          Rails.logger.error("Failed to get chat history: #{e.message}")
+          []
         end
 
         def save_chat_history(session_id, messages)
@@ -73,8 +85,31 @@ module Core
             ]
           end
 
-          Rails.cache.write("chat_history_#{session_id}", messages, expires_in: 1.hour)
+          Rails.cache.write(
+            cache_key(session_id),
+            messages,
+            expires_in: CACHE_EXPIRY,
+            race_condition_ttl: 30.seconds
+          )
           session_id
+        rescue Redis::BaseError => e
+          Rails.logger.error("Failed to save chat history: #{e.message}")
+          session_id
+        end
+
+        def cache_key(session_id)
+          "#{CACHE_KEY_PREFIX}_#{session_id}"
+        end
+
+        def retry_with_memory_store(message, session_id)
+          memory_store = ActiveSupport::Cache::MemoryStore.new
+          original_cache = Rails.cache
+          begin
+            Rails.cache = memory_store
+            chat(message, session_id)
+          ensure
+            Rails.cache = original_cache
+          end
         end
 
         def validate_env_variables!

@@ -49,7 +49,17 @@ Rails.application.configure do
   config.log_tags = [ :request_id ]
 
   # Use a different cache store in production.
-  # config.cache_store = :mem_cache_store
+  config.cache_store = :redis_cache_store, {
+    url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0"),
+    connect_timeout: 1,
+    read_timeout: 1,
+    write_timeout: 1,
+    reconnect_attempts: 3,
+    error_handler: -> (method:, returning:, exception:) {
+      Rails.logger.error "Redis error: #{exception.class} - #{exception.message}"
+      Sentry.capture_exception(exception) if defined?(Sentry)
+    }
+  }
 
   # Use a real queuing backend for Active Job (and separate queues per environment).
   # config.active_job.queue_adapter     = :resque
