@@ -2,8 +2,6 @@ module Core
   module Ai
     class ChatService
       MAX_HISTORY = 10
-      CACHE_KEY_PREFIX = "chat_history"
-      CACHE_EXPIRY = 1.minute
 
       class << self
         def chat(message, session_id = nil)
@@ -11,13 +9,18 @@ module Core
           validate_env_variables!
 
           client = OpenAI::Client.new
-          messages = get_chat_history(session_id)
+          chat = find_or_create_chat(session_id)
+          messages = get_chat_history(chat)
 
           if messages.empty?
-            messages << { role: "system", content: "Eres un analista de datos útil." }
+            system_message = { role: "system", content: "Eres un analista de datos útil." }
+            create_chat_message(chat, system_message)
+            messages << system_message
           end
 
-          messages << { role: "user", content: message }
+          user_message = { role: "user", content: message }
+          create_chat_message(chat, user_message)
+          messages << user_message
 
           response = client.chat(
             parameters: {
@@ -38,19 +41,18 @@ module Core
             raise ArgumentError, "No se pudo obtener una respuesta válida"
           end
 
-          messages << { role: "assistant", content: content }
-          session_id = save_chat_history(session_id, messages)
+          assistant_message = { role: "assistant", content: content }
+          create_chat_message(chat, assistant_message)
+          messages << assistant_message
 
           {
             success: true,
             content: content,
-            session_id: session_id,
+            session_id: chat.token,
             history: messages.reject { |m| m[:role] == "system" }
           }
         rescue OpenAI::Error => e
           raise ArgumentError, e.message
-        rescue Redis::BaseError => e
-          retry_with_memory_store(message, session_id)
         rescue StandardError => e
           raise ArgumentError, e.message
         end
@@ -58,58 +60,57 @@ module Core
         def clear_chat_history(session_id)
           return unless session_id
 
-          Rails.cache.delete(cache_key(session_id))
-        rescue Redis::BaseError => e
-          Rails.logger.error("Failed to clear chat history: #{e.message}")
-          false
+          chat = Chat.find_by(token: session_id)
+          chat&.chat_messages&.destroy_all
         end
 
         private
 
-        def get_chat_history(session_id)
-          return [] unless session_id
-
-          Rails.cache.fetch(cache_key(session_id), expires_in: CACHE_EXPIRY) || []
-        rescue Redis::BaseError => e
-          Rails.logger.error("Failed to get chat history: #{e.message}")
-          []
+        def find_or_create_chat(session_id)
+          if session_id
+            Chat.find_by(token: session_id) || create_chat(session_id)
+          else
+            create_chat
+          end
         end
 
-        def save_chat_history(session_id, messages)
-          session_id ||= SecureRandom.uuid
-
-          if messages.size > MAX_HISTORY
-            messages = [
-              messages.first,
-              *messages.last(MAX_HISTORY - 1)
-            ]
-          end
-
-          Rails.cache.write(
-            cache_key(session_id),
-            messages,
-            expires_in: CACHE_EXPIRY,
-            race_condition_ttl: 30.seconds
+        def create_chat(token = nil)
+          Chat.create!(
+            token: token || SecureRandom.uuid,
+            reference: "Chat #{Time.current}"
           )
-          session_id
-        rescue Redis::BaseError => e
-          Rails.logger.error("Failed to save chat history: #{e.message}")
-          session_id
         end
 
-        def cache_key(session_id)
-          "#{CACHE_KEY_PREFIX}_#{session_id}"
-        end
-
-        def retry_with_memory_store(message, session_id)
-          memory_store = ActiveSupport::Cache::MemoryStore.new
-          original_cache = Rails.cache
-          begin
-            Rails.cache = memory_store
-            chat(message, session_id)
-          ensure
-            Rails.cache = original_cache
+        def get_chat_history(chat)
+          messages = chat.chat_messages.order(:created_at).limit(MAX_HISTORY).map do |msg|
+            {
+              role: msg.metadata["sender"] == "user" ? "user" : "assistant",
+              content: msg.message
+            }
           end
+
+          messages.presence || []
+        end
+
+        def create_chat_message(chat, message)
+          sender = case message[:role]
+                  when "user" then "user"
+                  when "assistant" then "assistant"
+                  when "system" then "system"
+                  end
+
+          chat.chat_messages.create!(
+            token: SecureRandom.uuid,
+            message: message[:content],
+            response: message[:content],
+            message_type: sender == "user" ? :user : :assistant,
+            metadata: {
+              type: "text",
+              text: message[:content],
+              sender: sender,
+              timestamp: Time.current.to_i
+            }
+          )
         end
 
         def validate_env_variables!

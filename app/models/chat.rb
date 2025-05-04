@@ -18,12 +18,4 @@ class Chat < ApplicationRecord
 
   validates :token, :reference, presence: true
   validates :token, uniqueness: true
-
-  before_create :generate_token
-
-  private
-
-  def generate_token
-    self.token = SecureRandom.uuid
-  end
 end
