@@ -1,6 +1,6 @@
 module Core
   module Convert
-    class XlsxToDataSet
+    class XlsxToDataSetRoo
       class << self
         def data_set(xlsx_file)
           unless xlsx_file.respond_to?(:path) && File.exist?(xlsx_file.path)
@@ -11,13 +11,13 @@ module Core
           header = detect_header_row(xlsx)
           raise ArgumentError, 'No se pudo detectar una fila de encabezados válida' unless header[:value].present?
 
-          sheet = xlsx.sheet(0)
+          rows = []
 
-          rows = (header[:index] + 1..sheet.last_row).filter_map do |index|
-            row = sheet.row(index)
-            next if row.length != header[:value].length
+          xlsx.each_row_streaming(offset: header[:index] + 1) do |row|
+            columns = row.map(&:value)
+            next if columns.length != header[:value].length
 
-            header[:value].zip(row).to_h
+            rows << header[:value].zip(columns).to_h
           end
 
           rows

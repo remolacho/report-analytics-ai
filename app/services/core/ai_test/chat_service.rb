@@ -1,5 +1,5 @@
 module Core
-  module Ai
+  module AiTest
     class ChatService
       MAX_HISTORY = 10
 

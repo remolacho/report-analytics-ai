@@ -5,10 +5,16 @@ module Api
 
         # POST /v1/core/convert/xlsx_to_dataset
         def index
-            data = ::Core::Convert::XlsxToDataSet.data_set(params[:file])
+            df = ::Core::DataFrame::Builder.new.build(params[:file])
+            meses = %w[ENERO FEBRERO MARZO ABRIL MAYO JUNIO JULIO AGOSTO SEPTIEMBRE OCTUBRE NOVIEMBRE DICIEMBRE]
+            suma_meses = df.select(meses).sum
+            df_totales = Polars::DataFrame.new({
+              "mes" => meses,
+              "total" => suma_meses.row(0)
+            })
             render json: {
               success: true,
-              data: data
+              vega: df_totales.plot("mes", "total", type: "pie")
             }
         end
       end

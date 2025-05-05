@@ -81,6 +81,9 @@ GEM
     concurrent-ruby (1.1.10)
     connection_pool (2.5.3)
     crass (1.0.6)
+    creek (2.6.3)
+      nokogiri (>= 1.10.0)
+      rubyzip (>= 1.0.0)
     database_cleaner (2.0.1)
       database_cleaner-active_record (~> 2.0.0)
     database_cleaner-active_record (2.0.1)
@@ -293,6 +296,7 @@ GEM
       unf_ext
     unf_ext (0.0.8.2)
     uri (1.0.3)
+    vega (0.4.0)
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
@@ -306,6 +310,7 @@ DEPENDENCIES
   annotate (~> 3.2.0)
   auth_jwt_go (~> 1.0.3)
   bootsnap
+  creek
   database_cleaner (~> 2.0.1)
   debug
   factory_bot_rails (~> 6.2.0)
@@ -330,6 +335,7 @@ DEPENDENCIES
   ruby-openai (~> 5.2)
   sqlite3 (~> 1.4)
   tzinfo-data
+  vega
 
 RUBY VERSION
    ruby 3.2.2p53

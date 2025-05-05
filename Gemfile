@@ -22,7 +22,6 @@ gem "jbuilder"
 gem "redis", "~> 5.0"
 
 # Polar y procesamiento de datos
-gem "polars-df"
 gem 'parallel'            # Para procesamiento paralelo
 gem 'roo', '~> 2.10.0'   # Para manejo de archivos Excel
 
@@ -58,3 +57,7 @@ end
 group :test do
   gem 'database_cleaner', '~> 2.0.1'
 end
+
+gem "polars-df"
+gem "vega"
+gem 'creek'
