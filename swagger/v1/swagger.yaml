@@ -4,6 +4,64 @@ info:
   title: API V1
   version: v1
 paths:
+  "/v1/chats/create":
+    post:
+      summary: Create chat
+      tags:
+      - Chats
+      parameters: []
+      responses:
+        '201':
+          description: chat created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      reference:
+                        type: string
+                      token:
+                        type: string
+                      active:
+                        type: boolean
+                      created_at:
+                        type: string
+                        format: date-time
+                      updated_at:
+                        type: string
+                        format: date-time
+        '422':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chat:
+                  type: object
+                  properties:
+                    reference:
+                      type: string
+                      example: REF-123
+                  required:
+                  - reference
   "/v1/chats/list":
     get:
       summary: List chats

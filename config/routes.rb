@@ -11,6 +11,7 @@ Rails.application.routes.draw do
     namespace :v1 do
       namespace :chats do
         resources :list, only: [:index]
+        resources :create, only: [:create]
       end
 
       namespace :core do

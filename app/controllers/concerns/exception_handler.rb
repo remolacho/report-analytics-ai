@@ -6,6 +6,7 @@ module ExceptionHandler
 
   included do
     rescue_from ActiveRecord::RecordNotFound, with: :not_found
+    rescue_from ActiveRecord::RecordInvalid, with: :record_invalid
     rescue_from PolicyException, with: :forbidden
     rescue_from JWT::ExpiredSignature, with: :expired_signature
     rescue_from JWT::VerificationError, with: :without_authorization
@@ -15,6 +16,11 @@ module ExceptionHandler
     rescue_from RestClient::NotFound, with: :not_found_rest
     rescue_from RestClient::Forbidden, with: :locked
     rescue_from NoMethodError, with: :locked
+  end
+
+  # :nodoc:
+  def record_invalid(exception)
+    json_response(response: { success: false, message: exception.message }, status: :unprocessable_entity)
   end
 
   # :nodoc:
