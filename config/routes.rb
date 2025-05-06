@@ -12,6 +12,7 @@ Rails.application.routes.draw do
       namespace :chats do
         resources :list, only: [:index]
         resources :create, only: [:create]
+        resources :destroy, only: [:destroy]
       end
 
       namespace :core do
