@@ -16,16 +16,8 @@ Rails.application.routes.draw do
         resources :show, only: [:show]
       end
 
-      namespace :core do
-        resources :convert, only: [] do
-          collection do
-            post 'xlsx_to_dataset', to: 'convert#index'
-          end
-        end
-
-        resources :chat, only: [:create] do
-          delete ':session_id', to: 'chat#destroy', on: :collection
-        end
+      namespace :chat_messages do
+        resources :create, only: [:create]
       end
     end
   end

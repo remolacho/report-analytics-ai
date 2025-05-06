@@ -1,5 +1,6 @@
 module Chats
   class List
+    attr_reader :page
     def initialize(page: 1)
       @page = page
     end
@@ -9,7 +10,7 @@ module Chats
     end
 
     def pagination
-      ::Core::Pagination::MetaData.pagination(chats)
+      @pagination ||= ::Core::Pagination::MetaData.pagination(chats)
     end
 
     private
@@ -17,7 +18,7 @@ module Chats
     def chats
       @chats ||= Chat.active
                   .order(created_at: :desc)
-                  .page(@page)
+                  .page(page)
                   .per(10)
     end
   end

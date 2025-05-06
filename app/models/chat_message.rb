@@ -7,7 +7,6 @@
 #  message      :string           not null
 #  message_type :integer          not null
 #  metadata     :json             not null
-#  response     :string           not null
 #  token        :string           not null
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null
@@ -23,16 +22,21 @@
 #  chat_id  (chat_id => chats.id)
 #
 class ChatMessage < ApplicationRecord
+  ANALYTIC_TYPES = %w[error preview graph download]
+
   belongs_to :chat
   has_one_attached :file
 
-  validates :token, :message, :message_type, :response, :metadata, presence: true
+  validates :token, :message, :message_type, :metadata, presence: true
   validates :token, uniqueness: true
 
   enum message_type: {
     user: 0,
-    assistant: 1
+    assistant: 1,
+    system: 2
   }
+
+  scope :active, -> { where(active: true) }
 
   def file_url
     file.attached? ? Rails.application.routes.url_helpers.rails_blob_path(file, only_path: true) : nil

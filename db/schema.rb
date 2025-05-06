@@ -44,7 +44,6 @@ ActiveRecord::Schema[7.0].define(version: 2025_05_04_053908) do
     t.string "token", null: false
     t.string "message", null: false
     t.integer "message_type", null: false
-    t.string "response", null: false
     t.json "metadata", null: false
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false

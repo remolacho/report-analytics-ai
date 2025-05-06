@@ -7,7 +7,6 @@
 #  message      :string           not null
 #  message_type :integer          not null
 #  metadata     :json             not null
-#  response     :string           not null
 #  token        :string           not null
 #  created_at   :datetime         not null
 #  updated_at   :datetime         not null

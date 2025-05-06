@@ -4,13 +4,13 @@ module Api
       class ShowController < ApplicationController
         # GET /v1/chats/:id
         def show
-          service = ::Chats::Show.new(params[:id], params[:page])
+          service = ::ChatMessages::List::AllSerializers.new(params[:id], params[:page])
 
           render json: {
             success: true,
             data: {
               chat: service.chat,
-              messages: service.messages,
+              messages: service.get,
               pagination: service.pagination
             }
           }

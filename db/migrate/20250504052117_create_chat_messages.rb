@@ -5,7 +5,6 @@ class CreateChatMessages < ActiveRecord::Migration[7.0]
       t.string :token, null: false
       t.string :message, null: false
       t.integer :message_type, null: false
-      t.string :response, null: false
       t.json :metadata, null: false
       t.boolean :active, null: false, default: true
       t.timestamps
