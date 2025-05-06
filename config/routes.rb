@@ -9,13 +9,17 @@ Rails.application.routes.draw do
   resources :health, only: [:index]
   namespace :api, path: "" do
     namespace :v1 do
-      resources :hi, only: [:index]
+      namespace :chats do
+        resources :list, only: [:index]
+      end
+
       namespace :core do
         resources :convert, only: [] do
           collection do
             post 'xlsx_to_dataset', to: 'convert#index'
           end
         end
+
         resources :chat, only: [:create] do
           delete ':session_id', to: 'chat#destroy', on: :collection
         end

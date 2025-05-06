@@ -18,6 +18,9 @@ gem "puma", "~> 5.0"
 # Build JSON APIs with ease
 gem "jbuilder"
 
+# Use Kaminari for pagination
+gem 'kaminari'
+
 # Use Redis adapter to run Action Cable in production
 gem "redis", "~> 5.0"
 
@@ -52,6 +55,7 @@ group :development, :test do
   gem 'faker', '~> 2.21.0'
   gem 'rspec-rails', '~> 4.1.2'
   gem 'pry-byebug', '~> 3.10.0'
+  gem 'ffaker'
 end
 
 group :test do

@@ -15,6 +15,8 @@
 #
 FactoryBot.define do
   factory :chat do
-    
+    reference { "REF-#{SecureRandom.hex(4)}" }
+    token { SecureRandom.uuid }
+    active { true }
   end
 end

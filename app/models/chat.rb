@@ -18,4 +18,6 @@ class Chat < ApplicationRecord
 
   validates :token, :reference, presence: true
   validates :token, uniqueness: true
+
+  scope :active, -> { where(active: true) }
 end
