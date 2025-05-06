@@ -13,6 +13,7 @@ Rails.application.routes.draw do
         resources :list, only: [:index]
         resources :create, only: [:create]
         resources :destroy, only: [:destroy]
+        resources :show, only: [:show]
       end
 
       namespace :core do

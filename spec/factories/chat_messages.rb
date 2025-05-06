@@ -24,6 +24,12 @@
 #
 FactoryBot.define do
   factory :chat_message do
-    
+    chat
+    token { SecureRandom.uuid }
+    message { FFaker::Lorem.sentence }
+    message_type { 0 }
+    response { FFaker::Lorem.paragraph }
+    metadata { { timestamp: Time.current.to_i } }
+    active { true }
   end
 end
