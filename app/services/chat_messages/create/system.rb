@@ -8,6 +8,7 @@ module ChatMessages
           token: generate_token,
           message: data[:message],
           message_type: :system,
+          previous_message_id: previous_message&.id,
           metadata: {
             action: data[:analytic_type],
             message: data[:message],
@@ -19,22 +20,18 @@ module ChatMessages
           }
         )
 
-        attach_file(msg)
         msg.save!
         msg.reload
       end
 
-    # override
-      def attach_file(msg)
-        msg_history = chat.chat_messages.find_by(token: data[:history_message][:token])
-        return unless msg_history.present?
-
-        msg.file.attach(msg_history.file.blob)
+      def previous_message
+        @previous_message ||= chat.chat_messages.find_by(token: data[:history_message][:token])
       rescue StandardError
-        msg_history = chat.chat_messages.last
-        return unless msg_history.present?
-
-          msg.file.attach(msg_history.file.blob)
+        @rpevious_message ||= chat.chat_messages.active
+        .joins("JOIN active_storage_attachments ON active_storage_attachments.record_id = chat_messages.id
+                AND active_storage_attachments.record_type = 'ChatMessage'")
+        .where(message_type: :user)
+        .last
       end
     end
   end

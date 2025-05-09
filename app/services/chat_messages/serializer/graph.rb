@@ -1,9 +1,9 @@
 module ChatMessages
   module Serializer
-    class Preview
+    class Graph
       def self.parse(response, df=nil)
         {
-          action: "preview",
+          action: "graph",
           role: response.metadata["role"],
           message: parse_message(response, df),
           has_file: false,
@@ -16,41 +16,24 @@ module ChatMessages
       private
 
       def self.parse_message(response, df)
-        return create_html(response, df) if df.present?
+        return create_json(response, df) if df.present?
 
         response.metadata["response"]
       rescue StandardError => e
         {
           action: "text",
           role: "assistant",
-          message: "<div>Los siento, no puedo mostrar el preview me ayudas con palabras claves \n,
+          message: "<div>Los siento, no puedo mostrar el grafico me ayudas con palabras claves \n,
                     como suma, totalizar, agrupar, filtrar , seleccionar</div>",
           error: e.message,
           timestamp: Time.current.to_i
         }
       end
 
-      def self.create_html(response, df)
-        eval(response.metadata["source_code"], binding)
+      def self.create_json(response, df)
         result = eval(response.metadata["source_code"], binding)
-
-        result = <<~HTML.gsub(/\s+/, ' ').strip
-          <table>
-            <thead>
-              <tr>
-                #{result.columns.map { |col| "<th>#{col}</th>" }.join}
-              </tr>
-            </thead>
-            <tbody>
-              #{result.rows.map { |row|
-                "<tr>#{row.map { |val| "<td>#{val}</td>" }.join}</tr>"
-              }.join}
-            </tbody>
-          </table>
-        HTML
-
         response.update(metadata: response.metadata.merge(response: result))
-        result
+        result.to_json
       end
     end
   end

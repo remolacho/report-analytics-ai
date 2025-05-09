@@ -1,6 +1,13 @@
 module ChatMessages
   module Create
     class Assistant < Base
+      attr_reader :previous_message
+
+      def initialize(chat, data, previous_message=nil)
+        super(chat, data)
+
+        @previous_message = previous_message
+      end
 
       private
 
@@ -9,6 +16,7 @@ module ChatMessages
           token: generate_token,
           message: data[:message],
           message_type: :assistant,
+          previous_message_id: previous_message&.id,
           metadata: {
             action: data[:action],
             message: data[:message],
@@ -20,7 +28,6 @@ module ChatMessages
           }
         )
 
-        attach_file(msg) if has_file?
         msg.save!
         msg.reload
       end

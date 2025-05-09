@@ -6,6 +6,10 @@ module Analytic
           return ::Analytic::Actions::Preview.new(chat, df, msg_system).build
         end
 
+        if msg_system.metadata["action"] == "graph"
+          return ::Analytic::Actions::Graph.new(chat, df, msg_system).build
+        end
+
         {
           action: "text",
           role: "assistant",

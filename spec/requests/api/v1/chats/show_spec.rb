@@ -35,11 +35,14 @@ RSpec.describe Api::V1::Chats::ShowController, type: :request do
                   items: {
                     type: :object,
                     properties: {
-                      id: { type: :integer },
-                      content: { type: :string },
+                      action: { type: :string, enum: ['text', 'preview', 'download', 'graph'] },
                       role: { type: :string },
-                      created_at: { type: :string, format: 'date-time' },
-                      updated_at: { type: :string, format: 'date-time' }
+                      message: { type: :string },
+                      has_file: { type: :boolean },
+                      filename: { type: [:string, :null] },
+                      extension: { type: [:string, :null] },
+                      source_code: { type: [:string, :null] },
+                      timestamp: { type: :string }
                     }
                   }
                 },

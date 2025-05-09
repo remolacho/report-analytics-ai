@@ -41,6 +41,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_05_04_053908) do
 
   create_table "chat_messages", force: :cascade do |t|
     t.integer "chat_id", null: false
+    t.integer "previous_message_id"
     t.string "token", null: false
     t.string "message", null: false
     t.integer "message_type", null: false
@@ -49,6 +50,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_05_04_053908) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["chat_id"], name: "index_chat_messages_on_chat_id"
+    t.index ["previous_message_id"], name: "index_chat_messages_on_previous_message_id"
     t.index ["token"], name: "index_chat_messages_on_token", unique: true
   end
 
@@ -63,5 +65,6 @@ ActiveRecord::Schema[7.0].define(version: 2025_05_04_053908) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "chat_messages", "chat_messages", column: "previous_message_id"
   add_foreign_key "chat_messages", "chats"
 end

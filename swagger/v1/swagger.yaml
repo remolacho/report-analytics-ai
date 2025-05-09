@@ -4,6 +4,79 @@ info:
   title: API V1
   version: v1
 paths:
+  "/v1/chat_messages/create":
+    post:
+      summary: Creates a chat message
+      tags:
+      - Chat Messages
+      description: Creates a new chat message with optional file analysis. The message
+        can be a simple text query or include a file for analysis.
+      parameters: []
+      responses:
+        '201':
+          description: chat message created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      action:
+                        type: string
+                        enum:
+                        - text
+                        - preview
+                        - graph
+                        - download
+                      role:
+                        type: string
+                        enum:
+                        - assistant
+                        - user
+                        - system
+                      message:
+                        type: string
+                      has_file:
+                        type: boolean
+                      extension:
+                        type:
+                        - string
+                        - 'null'
+                      source_code:
+                        type:
+                        - string
+                        - 'null'
+                      timestamp:
+                        type: string
+        '404':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                  object:
+                    type: string
+                  id:
+                    type:
+                    - string
+                    - integer
+                    - 'null'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: integer
+        required: true
   "/v1/chats/create":
     post:
       summary: Create chat
@@ -223,18 +296,33 @@ paths:
                         items:
                           type: object
                           properties:
-                            id:
-                              type: integer
-                            content:
+                            action:
                               type: string
+                              enum:
+                              - text
+                              - preview
+                              - download
+                              - graph
                             role:
                               type: string
-                            created_at:
+                            message:
                               type: string
-                              format: date-time
-                            updated_at:
+                            has_file:
+                              type: boolean
+                            filename:
+                              type:
+                              - string
+                              - 'null'
+                            extension:
+                              type:
+                              - string
+                              - 'null'
+                            source_code:
+                              type:
+                              - string
+                              - 'null'
+                            timestamp:
                               type: string
-                              format: date-time
                       pagination:
                         type: object
                         properties:
@@ -264,7 +352,7 @@ paths:
                   message:
                     type: string
 servers:
-- url: http://{defaultHost}
+- url: https://{defaultHost}
   variables:
     defaultHost:
-      default: localhost:3000
+      default: www.example.com

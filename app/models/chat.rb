@@ -14,10 +14,12 @@
 #  index_chats_on_token  (token) UNIQUE
 #
 class Chat < ApplicationRecord
+  AI_MODEL = "gpt-3.5-turbo"
+
   has_many :chat_messages, dependent: :destroy
 
-  validates :token, :reference, presence: true
-  validates :token, uniqueness: true
+  validates :reference, presence: true, uniqueness: true
+  validates :token, presence: true
 
   scope :active, -> { where(active: true) }
 end

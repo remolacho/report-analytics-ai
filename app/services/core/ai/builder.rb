@@ -3,14 +3,14 @@ module Core
     class Builder
       attr_reader :prompt, :model
 
-      def initialize(prompt, model = "gpt-3.5-turbo")
+      def initialize(prompt, model = Chat::AI_MODEL)
         @prompt = prompt
         @model = model
       end
 
       def build
         case model
-        when "gpt-3.5-turbo"
+        when Chat::AI_MODEL
           Gpt35Turbo.new(prompt).call
         else
           raise ArgumentError, "Invalid model: #{model}"
