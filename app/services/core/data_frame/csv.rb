@@ -4,7 +4,7 @@ module Core
       class << self
 
         def create(file)
-          Polars::DataFrame.read_csv(file.path)
+          Polars.read_csv(file.path)
         end
       end
     end

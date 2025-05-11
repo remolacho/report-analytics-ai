@@ -1,40 +1,16 @@
 module ChatMessages
   module Serializer
-    class Preview
+    class Preview < Base
       def self.parse(response, df=nil)
-        {
-          action: "preview",
-          role: response.metadata["role"],
-          message: parse_message(response, df),
-          has_file: false,
-          extension: nil,
-          source_code: response.metadata["source_code"],
-          timestamp: response.created_at.strftime("%Y-%m-%d %H:%M:%S")
-        }
+        super("preview", response, df)
       end
 
       private
 
-      def self.parse_message(response, df)
-        return create_html(response, df) if df.present?
-
-        response.metadata["response"]
-      rescue StandardError => e
-        {
-          action: "text",
-          role: "assistant",
-          message: "<div>Los siento, no puedo mostrar el preview me ayudas con palabras claves \n,
-                    como suma, totalizar, agrupar, filtrar , seleccionar</div>",
-          error: e.message,
-          timestamp: Time.current.to_i
-        }
-      end
-
-      def self.create_html(response, df)
-        eval(response.metadata["source_code"], binding)
+      # override
+      def self.serialize_message(action, response, df)
         result = eval(response.metadata["source_code"], binding)
-
-        result = <<~HTML.gsub(/\s+/, ' ').strip
+        table = <<~HTML.gsub(/\s+/, ' ').strip
           <table>
             <thead>
               <tr>
@@ -49,8 +25,7 @@ module ChatMessages
           </table>
         HTML
 
-        response.update(metadata: response.metadata.merge(response: result))
-        result
+        msg_success(save(response, table), action)
       end
     end
   end

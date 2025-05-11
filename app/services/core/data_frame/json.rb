@@ -4,7 +4,7 @@ module Core
       class << self
 
         def create(file)
-          Polars::DataFrame.read_json(file.path)
+          Polars.read_json(file.path)
         end
       end
     end

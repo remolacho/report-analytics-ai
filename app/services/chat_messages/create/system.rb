@@ -15,8 +15,7 @@ module ChatMessages
             role: data[:role],
             has_file: true,
             extension: extension,
-            timestamp: Time.current.to_i,
-            history_message: data[:history_message],
+            timestamp: Time.current.to_i
           }
         )
 

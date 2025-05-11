@@ -25,7 +25,7 @@ module ChatMessages
         when 'text'
           ::ChatMessages::Serializer::Text
         when 'preview'
-          ::ChatMessages::Serializer::Graph
+          ::ChatMessages::Serializer::Preview
         when 'graph'
           ::ChatMessages::Serializer::Graph
         else

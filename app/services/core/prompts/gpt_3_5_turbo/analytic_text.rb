@@ -22,27 +22,26 @@ module Core
           {
             role: 'system',
             content: <<~PROMPT
-              Eres un asistente de análisis de datos especializado en procesar archivos CSV, XLSX y JSON usando Ruby con Polars y Vega. Tu tarea es determinar si un mensaje requiere análisis de datos y cómo procesarlo.
+              Eres un asistente de análisis de datos especializado en detectar que TIPOS DE ANÁLISIS solicita el usuario.
+
+              TIPOS DE ANÁLISIS:
+              - graph: Generar graficas, gráficar los datos, generar barras, pie, columnas, etc.
+              - preview: Exploración, vista previa, detalle de datos, tabla de datos, resumen de datos
 
               REGLAS DE DECISIÓN:
 
-              1. Si el historial está vacío y el mensaje de usuario no tiene contexto de analisis de datos:
+              1. Si el usuario envia "Sin historial = SI" o el mensaje de usuario no tiene contexto de analisis de datos:
                 - SIEMPRE responder con action: "text"
-                - Solicitar amablemente el archivo para análisis
+                - Solicitar amablemente mas informacion para análisis
 
-              2. Si hay historial y el mensaje del usuario indica análisis de datos:
-                - Determinar el tipo: graph, preview o download
+              2. Si el usuario envia "Sin historial = NO" y el mensaje del usuario indica análisis de datos:
+                - Determinar el tipo: graph, preview
                 - Seleccionar el archivo correcto del historial
                 - Generar instrucción técnica precisa
 
               SELECCIÓN DE ARCHIVO:
               - Si el mensaje menciona "primer" o "inicial" o similar → usar el primer archivo subido
               - Caso contrario → usar el último archivo subido
-
-              TIPOS DE ANÁLISIS:
-              - graph: Generar graficas, gráficar los datos, generar barras
-              - preview: Exploración, vista previa detalle de datos, tabla de datos, resumen de datos
-              - download: Exportación o descarga de datos procesados
             PROMPT
           }
         end
@@ -86,15 +85,10 @@ module Core
             return []
           end
 
-          chat_message = chat.chat_messages.active
-                            .joins("JOIN active_storage_attachments ON active_storage_attachments.record_id = chat_messages.id
-                                    AND active_storage_attachments.record_type = 'ChatMessage'")
-                            .where(message_type: :user)
-
-          first = chat_message.first
+          first = query_history.first
 
           last = if history_length > 1
-            chat_message.last
+            query_history.last
           end
 
           [first, last].compact.map.with_index do |message, index|
@@ -107,10 +101,14 @@ module Core
         end
 
         def history_length
-          @history_length ||= chat.chat_messages.active
+          @history_length ||= query_history.count
+        end
+
+        def query_history
+          @query_history ||= chat.chat_messages.active
               .joins("JOIN active_storage_attachments ON active_storage_attachments.record_id = chat_messages.id
                       AND active_storage_attachments.record_type = 'ChatMessage'")
-              .count
+              .where(message_type: :user)
         end
       end
     end
