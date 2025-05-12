@@ -4,14 +4,353 @@ info:
   title: API V1
   version: v1
 paths:
-  "/v1/hi":
-    get:
-      summary: Get HI
+  "/v1/chat_messages/create":
+    post:
+      summary: Creates a chat message
       tags:
-      - Hi
+      - Chat Messages
+      description: Creates a new chat message with optional file analysis. The message
+        can be a simple text query or include a file for analysis.
+      parameters: []
+      responses:
+        '201':
+          description: chat message created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      action:
+                        type: string
+                        enum:
+                        - text
+                        - preview
+                        - graph
+                        - download
+                      role:
+                        type: string
+                        enum:
+                        - assistant
+                        - user
+                        - system
+                      message:
+                        type: string
+                      has_file:
+                        type: boolean
+                      extension:
+                        type:
+                        - string
+                        - 'null'
+                      source_code:
+                        type:
+                        - string
+                        - 'null'
+                      timestamp:
+                        type: string
+        '404':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                  object:
+                    type: string
+                  id:
+                    type:
+                    - string
+                    - integer
+                    - 'null'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: integer
+        required: true
+  "/v1/chats/create":
+    post:
+      summary: Create chat
+      tags:
+      - Chats
+      parameters: []
+      responses:
+        '201':
+          description: chat created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      reference:
+                        type: string
+                      token:
+                        type: string
+                      active:
+                        type: boolean
+                      created_at:
+                        type: string
+                        format: date-time
+                      updated_at:
+                        type: string
+                        format: date-time
+        '422':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chat:
+                  type: object
+                  properties:
+                    reference:
+                      type: string
+                      example: REF-123
+                  required:
+                  - reference
+  "/v1/chats/destroy/{id}":
+    delete:
+      summary: Deactivate chat
+      tags:
+      - Chats
+      parameters:
+      - name: id
+        in: path
+        description: Chat ID
+        required: true
+        schema:
+          type: string
       responses:
         '200':
-          description: Hi
+          description: chat deactivated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      reference:
+                        type: string
+                      token:
+                        type: string
+                      active:
+                        type: boolean
+                      created_at:
+                        type: string
+                        format: date-time
+                      updated_at:
+                        type: string
+                        format: date-time
+        '404':
+          description: chat not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+  "/v1/chats/list":
+    get:
+      summary: List chats
+      tags:
+      - Chats
+      parameters:
+      - name: page
+        in: query
+        required: false
+        description: Page number
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: chats found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        reference:
+                          type: string
+                        token:
+                          type: string
+                        active:
+                          type: boolean
+                        created_at:
+                          type: string
+                          format: date-time
+                        updated_at:
+                          type: string
+                          format: date-time
+                  paginate:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      total_pages:
+                        type: integer
+                      total_count:
+                        type: integer
+                      next_page:
+                        type:
+                        - integer
+                        - 'null'
+                      prev_page:
+                        type:
+                        - integer
+                        - 'null'
+  "/v1/chats/show/{id}":
+    get:
+      summary: Show chat and messages
+      tags:
+      - Chats
+      parameters:
+      - name: id
+        in: path
+        description: Chat ID
+        required: true
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        description: Page number for messages
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: chat found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      chat:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          reference:
+                            type: string
+                          token:
+                            type: string
+                          active:
+                            type: boolean
+                          created_at:
+                            type: string
+                            format: date-time
+                          updated_at:
+                            type: string
+                            format: date-time
+                      messages:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            action:
+                              type: string
+                              enum:
+                              - text
+                              - preview
+                              - download
+                              - graph
+                            role:
+                              type: string
+                            message:
+                              type: string
+                            has_file:
+                              type: boolean
+                            filename:
+                              type:
+                              - string
+                              - 'null'
+                            extension:
+                              type:
+                              - string
+                              - 'null'
+                            source_code:
+                              type:
+                              - string
+                              - 'null'
+                            timestamp:
+                              type: string
+                      pagination:
+                        type: object
+                        properties:
+                          current_page:
+                            type: integer
+                          total_pages:
+                            type: integer
+                          total_count:
+                            type: integer
+                          next_page:
+                            type:
+                            - integer
+                            - 'null'
+                          prev_page:
+                            type:
+                            - integer
+                            - 'null'
+        '404':
+          description: chat not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
 servers:
 - url: https://{defaultHost}
   variables:

@@ -20,7 +20,20 @@ Rails.application.configure do
   # Enable/disable caching. By default caching is disabled.
   # Run rails dev:cache to toggle caching.
   if Rails.root.join("tmp/caching-dev.txt").exist?
-    config.cache_store = :memory_store
+    config.action_controller.perform_caching = true
+    config.action_controller.enable_fragment_cache_logging = true
+
+    config.cache_store = :redis_cache_store, {
+      url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0"),
+      connect_timeout: 1,
+      read_timeout: 1,
+      write_timeout: 1,
+      reconnect_attempts: 3,
+      error_handler: -> (method:, returning:, exception:) {
+        Rails.logger.error "Redis error: #{exception.class} - #{exception.message}"
+        Sentry.capture_exception(exception) if defined?(Sentry)
+      }
+    }
     config.public_file_server.headers = {
       "Cache-Control" => "public, max-age=#{2.days.to_i}"
     }

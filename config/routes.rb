@@ -9,7 +9,16 @@ Rails.application.routes.draw do
   resources :health, only: [:index]
   namespace :api, path: "" do
     namespace :v1 do
-      resources :hi, only: [:index]
+      namespace :chats do
+        resources :list, only: [:index]
+        resources :create, only: [:create]
+        resources :destroy, only: [:destroy]
+        resources :show, only: [:show]
+      end
+
+      namespace :chat_messages do
+        resources :create, only: [:create]
+      end
     end
   end
 end
